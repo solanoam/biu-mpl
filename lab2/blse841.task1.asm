@@ -25,31 +25,31 @@ CSEG
 
 ORG  0000h
 
-				CLR 		LED							; clear the LED
+CLR 		LED					     ; clear the LED
 BLINK:  CPL     LED             ; flash (complement) the red LED
-        CALL    DELAY           ; call short software delay
-				CPL     LED							; comp. the LED
-				CALL		DELAY1					; call long delay
-        JMP     BLINK           ; repeat indefinately
+        CALL    DELAY1          ; call short software delay
+		CPL      LED				; comp. the LED
+		CALL	DELAY1			; call long delay
+        JMP      BLINK           ; repeat indefinately
 
 ;____________________________________________________________________
                                                         ; SUBROUTINES
 
 DELAY:                          ; delay of approx. 100ms
-        MOV     R7,#400         ; 8 * 12.41ms = 99.4ms. multiplied by 50, we get 5 seconds
+        MOV     R7,#78          ; 8 * 12.41ms = 99.4ms. multiplied by 78, we get 1 seconds
         MOV     R6,#200         ; 200 * 62.1us = 12.42ms
-        MOV     R5,#229         ; 229 * 0.271us = 62.1us
-DLY:    DJNZ    R5,$            ; sit here for 0.271 us
-				MOV			R5, #229
+			MOV     R5,#229         ; 229 * 0.271us = 62.1us
+DLY:   	DJNZ    R5,$            ; sit here for 0.271 us
+		MOV		R5,#229
         DJNZ    R6,DLY          ; repeat 200 times (12.4ms delay)
-        MOV			R6, #200
-				DJNZ    R7,DLY          ; repeat 8 times (100ms delay)
+        MOV		R6,#200
+		DJNZ    R7,DLY          ; repeat 80 times (1sec delay)
         RET
 
 DELAY1:                         ; delay approx. 1s
 
-        MOV     R4,#0          ; changeg, not there is now deley diffrence.
-DLY1:		CALL	DELAY
+        MOV     R4,#5          ; as we use the same deley for on and of, we get the deley of 1sec * 5 = 5sec 
+DLY1:	CALL	DELAY
         DJNZ    R4,DLY1         ; repeat 10 times (1s delay)
         RET
 
