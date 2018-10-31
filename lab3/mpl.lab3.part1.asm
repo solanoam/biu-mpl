@@ -33,7 +33,7 @@ LOOP:
 LOOPBEG:
         CLR		07fh			; clear flag
         CALL 	DELAY			; call 200ms delay
-        CLR		IE0
+        CLR		IE0       
         SETB	EX0
         JMP		LOOP	    ; loop
 DELAY:
