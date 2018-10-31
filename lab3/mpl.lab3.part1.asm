@@ -32,10 +32,10 @@ LOOP:
         JNB   07fh , LOOPBEG ;checking flag bit
 LOOPBEG:
         CLR		07fh			; clear flag
-        CALL 	DELAY			; inisiate 200ms delay
+        CALL 	DELAY			; call 200ms delay
         CLR		IE0
         SETB	EX0
-        JMP		LOOP	; return to 'listening'
+        JMP		LOOP	    ; loop
 DELAY:
         MOV     R7,#16          ; 16 * 12.41ms = 198.56ms
         MOV     R6,#200         ; 200 * 62.1us = 12.42ms
