@@ -41,7 +41,7 @@ LOOPBEG:
         SETB	EX0
         JMP		LOOP	    ; loop
 DELAY:
-        MOV     R7,#160          ; 16 * 12.41ms = 198.56ms
+        MOV     R7,#16          ; 16 * 12.41ms = 198.56ms
         MOV     R6,#200         ; 200 * 62.1us = 12.42ms
         MOV     R5,#229         ; 229 * 0.271us = 62.1us
 DLY:    DJNZ    R5,$            ;
