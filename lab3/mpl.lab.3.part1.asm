@@ -13,6 +13,7 @@
 ;
 ;********************************************************************
 LED     EQU   P3.4      ; P3.4 is red LED on eval board
+SHW     EQU   P3.2      ; P3.2 is red SHW on eval board
 CSEG    AT    0000h
         JMP   MAIN
 
