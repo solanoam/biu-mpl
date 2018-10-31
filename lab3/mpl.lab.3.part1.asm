@@ -12,7 +12,7 @@
 ;               : the LED is toggoled at every call
 ;
 ;********************************************************************
-
+LED     EQU   P3.4      ; P3.4 is red LED on eval board
 CSEG    AT    0000h
         JMP   MAIN
 
