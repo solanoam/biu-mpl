@@ -1,0 +1,26 @@
+;********************************************************************
+;
+; Authors       : Noam Solan & Ronen Rozin
+;
+; Date          : 14/11/18
+;
+; File          : mpl.lab4.asm
+;
+; Hardware      : 8051 based processor
+;
+; Description   : Transmitting and receiving from UART
+;
+;********************************************************************
+CSEG AT 0h
+JMP MAIN
+
+CSEG AT 023h ; serial interrupt address
+JMP SERINT
+
+CSEG AT 0100h
+MAIN:
+  CLR SM0 ; turn off SM0
+  SETB SM1 ; turn on SM1
+  SETB REN ; turn on REN
+  CLR RI ; must be reset after every input
+  CLR ET1 ; clear timer1 interrupt
