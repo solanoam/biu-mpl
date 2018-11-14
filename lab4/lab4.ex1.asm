@@ -40,6 +40,7 @@ SERINT:
 INPUT:
   PUSH ACC
   MOV ACC, SBUF ; get value from SBUF
+  XRL A, #00100000b  ;convert to lower case
   MOV SBUF, ACC ; send value to SBUF
   POP ACC
   RETI

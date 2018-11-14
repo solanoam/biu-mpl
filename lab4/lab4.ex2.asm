@@ -18,12 +18,12 @@ JMP MAIN
 CSEG AT 023h ; serial interrupt address
 JMP SERINT
 
-CSEG AT OBh ; timer0 interrupt
+CSEG AT 0Bh ; timer0 interrupt
 JMP CONINT0
 
 CSEG AT 0100h
 MAIN:
-  MOV LETTER, #'A'
+  MOV VALUE, #'A'
   CLR SM0 ; turn off SM0
   SETB SM1 ; turn on SM1
   SETB REN ; turn on REN
@@ -45,16 +45,20 @@ SERINT:
   RETI
 
 INPUT:
-  MOV LETTER, SBUF ; get value from SBUF
+  PUSH ACC
+  MOV A, SBUF
+  XRL A, #00100000b  ;convert case
+  MOV VALUE, A ; get value from SBUF
+  POP ACC
   RETI
 
 CONINT0:
-  MOV TL0, #0F2h ; setting interrupt every 5ms
   MOV TH0, #027h
-  MOV SBUF, LETTER ; send value to SBUG
+  MOV TL0, #0F2h ; setting interrupt every 5ms  
+  MOV SBUF, VALUE ; send value to SBUG
   RETI
 
 DSEG AT 30h
-LETTER: DS 1
+VALUE: DS 1
 
 END
