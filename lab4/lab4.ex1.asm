@@ -38,11 +38,11 @@ SERINT:
   RETI
 
 INPUT:
-  PUSH ACC
+  PUSH ACC ;preserving ACC
   MOV ACC, SBUF ; get value from SBUF
-  XRL A, #00100000b  ;convert to lower case
+  XRL A, #00100000b  ;convert case
   MOV SBUF, ACC ; send value to SBUF
-  POP ACC
+  POP ACC ;restoring ACC
   RETI
 
 END

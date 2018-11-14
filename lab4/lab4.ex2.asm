@@ -45,15 +45,15 @@ SERINT:
   RETI
 
 INPUT:
-  PUSH ACC
-  MOV A, SBUF
+  PUSH ACC ;preserving ACC
+  MOV A, ;SBUF saving new input
   XRL A, #00100000b  ;convert case
   MOV VALUE, A ; get value from SBUF
-  POP ACC
+  POP ACC ;restoring ACC
   RETI
 
 CONINT0:
-  MOV TH0, #027h
+  MOV TH0, #027h 
   MOV TL0, #0F2h ; setting interrupt every 5ms  
   MOV SBUF, VALUE ; send value to SBUG
   RETI
