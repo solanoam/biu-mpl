@@ -2,99 +2,91 @@
 CSEG AT 0000H
 JMP MAIN
 
-CSEG AT 0023H ; ADDRESS OF SERIAL INTERUPT
-JMP SERIAL ; WE JMP TO OTHER LOCATION BECUASE OF SHORT MEMORY
+CSEG AT 0023H ; change serial int
+JMP SER
 
-CSEG AT 0003H ; ADDRESS OF TIMER 0 INTERUPT
-JMP EX_INT0 ; WE JMP TO OTHER LOCATION BECUASE OF SHORT MEMORY
+CSEG AT 0003H ; timer 3 INT
+JMP EX_INT0
 
-CSEG AT 0100H ; MAIN
+CSEG AT 0100H ; main
 
 MAIN:
-	CLR SM0  ;TURN OFF BIT 7 IN SCON
-	SETB SM1 ;TURN ON BIT 6 IN SCON
-	SETB REN ;TURN ON BIT 4 SCON
-	ANL PCON , #07FH ; SMOD=0 FOR BAUD RATE CALCULATION
-	ANL TMOD , #02FH ; TURNNING OFF BIT 4 TO SET TIMER1 TO AUTO RELOAD MODE
-	ORL TMOD , #020H ;  TURNNING ON BIT 5 TO SET TIMER1 TO AUTO RELOAD MODE
-	MOV TH1 , #0EEH ; OVERFLOW EVERY 144 CYCLE 256-112=144 --> 76800 [OVERFLOWS/SEC]
-				    ; 76800*2^0/32 = BAUD RATE OF 2400[BITS/SEC]
-	SETB TR1 ; TURN TIMER 1 ON
-	CLR IT0 ; Make the interrupt LEVEL triggered.
-	;-----SET INTERUPTS-----
-	CLR ET1 ; CLEAR INTERUPT FOR TIMER1
-	SETB ES ; ENABLE SERIAL PORT INTERUPT
-	SETB EX0 ; Enable EXT INTERUPT 0.
-	SETB EA ; GLOBAL INTERRUPT ENABLE
+	CLR SM0
+	SETB SM1
+	SETB REN
+	ANL PCON , #07FH ; baud rate set to 19200
+	ANL TMOD , #02FH
+	ORL TMOD , #020H
+	MOV TH1 , #00EEH
+	SETB TR1 ; timer1 is on
+	CLR ET1 ; disable timer1 int
+	SETB ES ; enable port int
+	SETB EA ; enable all int
 	JMP $ ; inf loop
 
-SERIAL:
-	CLR TI ; CLEAR THE TRANSMIT FLAG OF THE UART
-	JBC RI,RI_ON ;TURN OFF RI AND JMP TO SEND IT BACK
-	;TRANSMINT INTERUPT
-	PUSH ACC ;SAVE THE ACCUMLATOR
-	CLR A
-	MOVC A , @A+DPTR ; DPTR HOLD THE ADDRESS TO THE LABEL THAT REPRESNT THE LETTER THAT SUPPOSED TO BE PRINT
-	JZ IN_NULL ; DO NOT PRINT OF THE LETTER THAT A HOLDS IS NULL
-	MOV SBUF , A ; SEND A TO SBUF WILL PRINT IT
-	INC DPTR ; FOR READING THE NEXT LETTER IN THE STRING
-	JMP END_SER
-IN_NULL: ;JUMP TO THIS POINT WHEN WEPINISH THE STRING
-	SETB EX0 ; Enable EXT INTERUPT 0.
-END_SER:
-	POP ACC
-RETI
+	SER:
+		CLR TI ; clear transmit for uart
+		JBC RI,TRANS_INT ;turn RI off and send back the value
+		PUSH ACC
+		CLR A
+		MOVC A , @A+DPTR ; jump to the printing function of the letter that should be printed
+		JZ NULL ; when null, skip, and set ex0 for next press
+		MOV SBUF , A ; print the value of A
+		INC DPTR ; get next letter from string
+		JMP STR_NOTFINISHED ; string is not finished.
+	NULL:
+		SETB EX0 ; Enable ext int 0
+	STR_NOTFINISHED:
+		POP ACC
+	RETI
 
 EX_INT0: ; interrupt 0 function
 	CLR EX0 ;close interrupts
-		MOV DPTR , #INT0_PRESSED ;move to tptr the addres of ths string to print
+		MOV DPTR , #int0Press ;move dptr to the addres of ths string
 		SETB TI ; create an interrupt that will cause the print
 RETI
 
-RI_ON:
-		CLR RI ;CLEAR THE RECIVE FLAG OF THE UART
-		MOV R2 , SBUF ; REGISTER R2 WILL GET THE LETTER THAT ENTERED THE SBUF FROM THE
-		CJNE R2 , #'a' ,CHECK_B ;check if r2 hold a, if not jump to check_b
-		MOV DPTR , #A_PRESSED ;if it is 'a' in r2 enter dptr the address of 'a' to print
-		JMP END_RI
-	CHECK_B:
-		CJNE R2 , #'b' , CHECK_C
-		MOV DPTR , #B_PRESSED
-		JMP END_RI
-	CHECK_C:
-		CJNE R2 , #'c' , CHECK_D
-		MOV DPTR , #C_PRESSED
-		JMP END_RI
-	CHECK_D:
-		CJNE R2 , #'d' , END_RI
-		MOV DPTR , #D_PRESSED
-	END_RI:
+TRANS_INT:
+		CLR RI ;no other interupts from uart while sending
+		MOV R2 , SBUF ; store input from uart
+		;swtich case for letters a-d
+		CJNE R2 , #'a' ,bCheck
+		MOV DPTR , #aPress
+		JMP TRANS_INT_END
+	bCheck:
+		CJNE R2 , #'b' , cCheck
+		MOV DPTR , #bPress
+		JMP TRANS_INT_END
+	cCheck:
+		CJNE R2 , #'c' , dCheck
+		MOV DPTR , #cPress
+		JMP TRANS_INT_END
+	dCheck:
+		CJNE R2 , #'d' , TRANS_INT_END
+		MOV DPTR , #dPress
+	TRANS_INT_END:
 		SETB TI
 RETI
 
-CSEG AT 0200H ; this strings address will enter to the dptr
-A_PRESSED: DB 'Alpha'
-		   DB 13 ; CARRIAGE RETURN
-		   DB 10 ; NEW LINE
-		   DB 0 ; NULL
-
-B_PRESSED: DB 'Beta'
-		   DB 13 ; CARRIAGE RETURN
-		   DB 10 ; NEW LINE
-		   DB 0 ; NULL
-
-C_PRESSED: DB 'Charlie'
-		   DB 13 ; CARRIAGE RETURN
-		   DB 10 ; NEW LINE
-		   DB 0 ; NULL
-
-D_PRESSED: DB 'Delta'
-		   DB 13 ; CARRIAGE RETURN
-		   DB 10 ; NEW LINE
-		   DB 0 ; NULL
-INT0_PRESSED: DB 'This button should not be pressed!'
-			  DB 13 ; CARRIAGE RETURN
-		      DB 10 ; NEW LINE
-		      DB 0 ; NULL
-
+CSEG AT 0300H
+aPress: DB 'Alpha'
+		   DB 13
+		   DB 10
+		   DB 0
+bPress: DB 'Beta'
+		   DB 13
+		   DB 10
+		   DB 0
+cPress: DB 'Charlie'
+		   DB 13
+		   DB 10
+		   DB 0
+dPress: DB 'Delta'
+		   DB 13
+		   DB 10
+		   DB 0
+int0Press: DB 'This button should not be pressed!'
+			  DB 13
+		      DB 10
+		      DB 0
 END
