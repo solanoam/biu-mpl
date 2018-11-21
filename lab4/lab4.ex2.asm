@@ -46,7 +46,7 @@ SERINT:
 
 INPUT:
   PUSH ACC ;preserving ACC
-  MOV A, ;SBUF saving new input
+  MOV A, SBUF ;saving new input
   XRL A, #00100000b  ;convert case
   MOV VALUE, A ; get value from SBUF
   POP ACC ;restoring ACC
