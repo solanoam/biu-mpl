@@ -1,4 +1,16 @@
-
+;********************************************************************
+;
+; Authors       : Noam Solan & Ronen Rozin
+;
+; Date          : 21/11/18
+;
+; File          : mpl.lab4.asm
+;
+; Hardware      : 8051 based processor
+;
+; Description   : Transmitting and receiving from UART
+;
+;********************************************************************
 CSEG AT 0000H
 JMP MAIN
 
@@ -56,7 +68,7 @@ TRANS_INT:
 		SETB TI
 RETI
 
-//data segment
+;data segment
 CSEG AT 0300H
 aPress: DB 'Alpha'
 		   DB 13
