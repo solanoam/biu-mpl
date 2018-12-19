@@ -1,4 +1,16 @@
-
+;********************************************************************
+;
+; Authors       : Noam Solan & Ronen Rozin
+;
+; Date          : 19/12/18
+;
+; File          : mpl.lab7.ex1.asm
+;
+; Hardware      : 8051 based processor
+;
+; Description   : DACs
+;
+;********************************************************************
 #include <ADUC841.h>
 <<<<<<< HEAD
 LED     EQU     P3.4
@@ -13,7 +25,7 @@ CSEG AT 0023H ; serial int address
 CLR ES ; disable serial port int
 SETB UARTF
 =======
-LED	 EQU     P3.4  
+LED	 EQU     P3.4
 CSEG AT 0000H
 	JMP MAIN
 
@@ -117,8 +129,8 @@ DB 0
 ERR_MSG:   DB 'ERROR - WRONG KEY PRESSED'
 		   DB 13 ; CARRIAGE RETURN
 		   DB 10 ; NEW LINE
-		   DB 0 ; NULL	
- 
+		   DB 0 ; NULL
+
 TO_SCREEN: DB '1. period of 4 us'
 		   DB 13 ; CARRIAGE RETURN
 		   DB 10 ; NEW LINE
@@ -128,9 +140,9 @@ TO_SCREEN: DB '1. period of 4 us'
 		   DB '3. period of 46 us'
 		   DB 13 ; CARRIAGE RETURN
 		   DB 10 ; NEW LINE
-		   DB 0 ; NULL	
-		   
-BSEG 
+		   DB 0 ; NULL
+
+BSEG
 FLAG_UART: DBIT 1
 
 END
