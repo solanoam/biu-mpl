@@ -1,0 +1,44 @@
+;AUTHORS : OFIR POST 308401066 AND EMRI BIRAN 203798897	
+;DATE : 2/1/18
+;FILE NAME: EX1.ASM
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#include <ADUC841.h>
+CSEG AT 0000H
+	JMP MAIN
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+CSEG AT 0033H ; ADDRESS OF ADC INTERUPT
+	JMP ADC_INT ; 
+RETI
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+CSEG AT 002BH ; ADDRESS OF TIMER1 INTERUPT
+	JMP TIMER2_INT ; 
+RETI
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+CSEG AT 0100H ; MAIN
+
+MAIN:
+
+	MOV ADCCON1, #0B8H
+	CLR CCONV
+	ANL ADCCON2,#090H
+	ANL T2CON, #044H
+	SETB TR2; ENABLE TIMER 2
+	ANL DACCON , #07FH
+	ORL DACCON , #2DH
+	;-----SET INTERUPTS-----
+	SETB EADC ; TURN ON ADC INTERRUPT
+	SETB ET2 ; TIMER2 INTERRUPT
+	SETB EA ; GLOBAL INTERRUPT ENABLE
+	JMP $	;INF LOOP
+
+ADC_INT:
+		MOV DAC0L,ADCDATAL
+		MOV DAC0H,ADCDATAH
+RETI
+
+TIMER2_INT:
+	CLR TF2
+	SETB SCONV
+RETI	
+	
+END
