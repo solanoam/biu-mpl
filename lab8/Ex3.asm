@@ -22,10 +22,12 @@ RETI
 CSEG AT 0100H
 MAIN:
 	MOV ADCCON1, #0B8H ;setting adc with correct settings
+	SETB CCONV; continuous conversion
 	ANL ADCCON2, #090H ;adc on
 	SETB CCONV; continuous conversion
 	ANL DACCON , #07FH ;config for dac
 	ORL DACCON , #2DH
+	CLR TR2
 	SETB EADC ; adc int
 	SETB EA ;all ints
 	SETB SCONV
