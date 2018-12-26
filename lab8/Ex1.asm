@@ -1,44 +1,51 @@
-;AUTHORS : OFIR POST 308401066 AND EMRI BIRAN 203798897	
-;DATE : 2/1/18
-;FILE NAME: EX1.ASM
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;********************************************************************
+;
+; Authors       : Noam Solan & Ronen Rozin
+;
+; Date          : 26/12/18
+;
+; File          : mpl.lab8.ex1.asm
+;
+; Hardware      : 8051 based processor
+;
+; Description   : ADCs
+;
+;********************************************************************
 #include <ADUC841.h>
 CSEG AT 0000H
-	JMP MAIN
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-CSEG AT 0033H ; ADDRESS OF ADC INTERUPT
-	JMP ADC_INT ; 
-RETI
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-CSEG AT 002BH ; ADDRESS OF TIMER1 INTERUPT
-	JMP TIMER2_INT ; 
-RETI
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-CSEG AT 0100H ; MAIN
+JMP MAIN
 
+CSEG AT 002BH; timer1 int location
+JMP TIMER2_INT
+RETI
+
+CSEG AT 0033H; adc int location
+JMP ADC_INT
+RETI
+
+
+CSEG AT 0100H
 MAIN:
-
-	MOV ADCCON1, #0B8H
-	CLR CCONV
-	ANL ADCCON2,#090H
-	ANL T2CON, #044H
-	SETB TR2; ENABLE TIMER 2
-	ANL DACCON , #07FH
+	MOV ADCCON1, #0B8H;setting adc with correct settings
+	CLR CCONV;no continuous conversion
+	ANL ADCCON2,#090H ;adc on
+	ANL T2CON, #044H; config for timer2
+	ANL DACCON , #07FH;config for dac
 	ORL DACCON , #2DH
-	;-----SET INTERUPTS-----
-	SETB EADC ; TURN ON ADC INTERRUPT
-	SETB ET2 ; TIMER2 INTERRUPT
-	SETB EA ; GLOBAL INTERRUPT ENABLE
-	JMP $	;INF LOOP
+	SETB TR2; timer2 enable
+	SETB EADC; adc int
+	SETB ET2; timer2 int
+	SETB EA;all ints
+	JMP $; looping
 
 ADC_INT:
-		MOV DAC0L,ADCDATAL
+		MOV DAC0L,ADCDATAL;fetching data to dac
 		MOV DAC0H,ADCDATAH
 RETI
 
 TIMER2_INT:
 	CLR TF2
 	SETB SCONV
-RETI	
-	
+RETI
+
 END

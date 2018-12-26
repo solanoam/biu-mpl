@@ -8,36 +8,31 @@
 ;
 ; Hardware      : 8051 based processor
 ;
-; Description   : DACs
+; Description   : ADCs
 ;
 ;********************************************************************
 #include <ADUC841.h>
 CSEG AT 0000H
-	JMP MAIN
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-CSEG AT 0033H ; ADDRESS OF ADC INTERUPT
-	JMP ADC_INT ;
+JMP MAIN
+
+CSEG AT 0033H; adc int location
+JMP ADC_INT
 RETI
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-CSEG AT 0100H ; MAIN
 
+CSEG AT 0100H
 MAIN:
-
-	MOV ADCCON1, #0B8H ; DEFINE ADC AS  10111000
-    ;[EN(1)][ACCORDING TO V REFFERNCE(0)][DIVIDE BY 2(11)][AMOUNT OF CYCLES TO SAMPLE(10)][ACCORDING TO TIMER2(0)][OUTER(0)]
-	CLR CCONV ; CLR BIT 5 OF ADCCON2
-	ANL ADCCON2,#090H ;TURN ON ADC
-	SETB CCONV; CONTINUOUS CONVERSION
-	ANL DACCON , #07FH ;DAC CONFIG
+	MOV ADCCON1, #0B8H ;setting adc with correct settings
+	ANL ADCCON2, #090H ;adc on
+	SETB CCONV; continuous conversion
+	ANL DACCON , #07FH ;config for dac
 	ORL DACCON , #2DH
-	;-----SET INTERUPTS-----
-	SETB EADC ; TURN ON ADC INTERRUPT
-	SETB EA ; GLOBAL INTERRUPT ENABLE
+	SETB EADC ; adc int
+	SETB EA ;all ints
 	SETB SCONV
-	JMP $	;INF LOOP
+	JMP $	;looping
 
 ADC_INT:
-		MOV DAC0L,ADCDATAL ; COPY ADC OUTPUT TO DAC INPUT
+		MOV DAC0L,ADCDATAL ;fetching data to dac
 		MOV DAC0H,ADCDATAH
 RETI
 
