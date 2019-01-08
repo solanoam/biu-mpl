@@ -21,84 +21,74 @@ CPL LED
 RETI
 
 CSEG AT 0023H ; change serial int
-SETB SerFlag
+JMP SER
 RETI
 
 CSEG AT 0100H ; main
 
 MAIN:
+	;uart setup
 	CLR SM0
 	SETB SM1
 	SETB REN
+	CLR TI
+	;initialize flags
 	CLR DevideFlag
 	CLR RestoreFlag
-	CLR SerFlag
-	ANL PCON , #07FH ; baud rate set to 19200
-	ANL TMOD , #02FH
-	ORL TMOD , #020H
-	MOV TH1 , #00FAH
+
+	ANL PCON , #01111111b ;set SMOD
+	ORL TMOD , #00100010b ;set timer 0 and timer 1 to autoreload mode
+	ANL TMOD , #11111010B
+
+	MOV TH1 , #250d
 	SETB TR1 ; timer1 is on
 	CLR ET1 ; disable timer1 int
-	MOV TH0, #00FAH
+
+	MOV TH0, #145d
 	SETB TR0 ; timer1 is on
-	SETB ET0 ; disable timer1 int
+	SETB ET0 ; enable timer0 int
+
 	SETB ES ; enable port int
 	SETB EA ; enable all int
+
 Loop:
-	JB SerFlag, SER
 	JB DevideFlag, devideClock
 	JB RestoreFlag, restoreClock
 	JMP Loop ; inf loop
-	
+
 devideClock:
-	ANL PLLCON, #00H
-	ORL PLLCON, #01H
-	MOV TH1 , #00FDH
-	CLR DevideFlag
+	ANL PLLCON, ,#00000000b ;divide cpu clock by 2
+	ORL PLLCON, #00000001b
+	MOV TH1 , #253d ;reconfigure baud rate for new cpu clock
+	CLR DevideFlag ;restore flag
 	JMP Loop
 
 restoreClock:
-	ANL PLLCON, #00H
-	ORL PLLCON, #01H
-	MOV TH1 , #00FAH
+	ANL PLLCON, #00000000b ;multiply cpu clock by 2
+	MOV TH1 , #250d ;reconfigure baud rate
 	CLR RestoreFlag
 	JMP Loop
-  
+
 SER:
-  CLR TI ; clear transmit for uart
-  JBC RI,TRANS_INT ;turn RI off and send back the value
-  PUSH PSW
-  PUSH ACC
+  	CLR TI ; clear transmit for uart
+  	JBC RI,CheckChar ;turn RI off and send back the value
+  	RETI
 CheckChar:
-  JB DevideFlag, ClockChange
-  JB RestoreFlag, ClockChange
+  	MOV A,SBUF
+  	CJNE A ,#'!',notDevide ;check if value is '!'. If not, jump to "notDevide"
+  	SETB DevideFlag ;if it does, set flag
+  	RETI
+notDevide:
+  	CJNE A, #')', EchoChar ;check if value is ')'. If not, jump to "EchoChar"
+  	SETB RestoreFlag ;if it does, set flag
+  	RETI
 EchoChar:
-  MOV A, SBUF
-  MOV SBUF, A
-ClockChange:
-  POP ACC
-  POP PSW
-JMP Loop
-
-
-TRANS_INT:
-	CLR RI ;no other interupts from uart while sending
-	MOV R2 , SBUF ; store input from uart
-	;swtich case for letters a-d
-  changeSpeedHandler:
-    CJNE R2 , #'!' ,restoreSpeedHandle
-    SETB DevideFlag
-  restoreSpeedHandle:
-		CJNE R2 , #'(' , TRANS_INT_END
-		SETB RestoreFlag
-	TRANS_INT_END:
-		SETB TI
-JMP CheckChar
-
+  	MOV SBUF, A ;write value to SBUF
+  	CLR RI
+  	RETI
 
 
 BSEG
 DevideFlag: DBIT 1
 RestoreFlag: DBIT 1
-SerFlag: DBIT 1
 END
